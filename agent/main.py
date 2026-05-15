@@ -7,12 +7,14 @@ import requests
 
 from config import BACKEND_URL, AGENT_INTERVAL_SECONDS, HOSTNAME
 from collectors import cpu, memory, disk, network, process
+from producer import publish
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [AGENT] %(levelname)s %(message)s"
 )
 log = logging.getLogger(__name__)
+
 
 def collect_all():
     return {
@@ -25,7 +27,9 @@ def collect_all():
         "processes": process.collect(),
     }
 
-def ship(payload: dict):
+
+def ship_http(payload: dict):
+    """Fallback: send directly to backend via HTTP"""
     try:
         resp = requests.post(
             f"{BACKEND_URL}/api/v1/metrics/ingest",
@@ -33,17 +37,24 @@ def ship(payload: dict):
             timeout=5
         )
         resp.raise_for_status()
-        log.info(f"Shipped metrics | CPU: {payload['cpu']['cpu_percent_total']}% | RAM: {payload['memory']['ram_percent']}%")
+        log.info(f"[HTTP] Shipped | CPU: {payload['cpu']['cpu_percent_total']}% | RAM: {payload['memory']['ram_percent']}%")
     except requests.exceptions.ConnectionError:
-        log.warning("Backend not reachable — will retry next interval")
-    except requests.exceptions.HTTPError as e:
-        log.error(f"Backend rejected payload: {e}")
+        log.warning("[HTTP] Backend not reachable")
     except Exception as e:
-        log.error(f"Unexpected error: {e}")
+        log.error(f"[HTTP] Error: {e}")
+
+
+def ship(payload: dict):
+    """Try Kafka first, fall back to HTTP"""
+    published = publish(payload)
+    if not published:
+        log.warning("Kafka unavailable — falling back to HTTP")
+        ship_http(payload)
+
 
 def main():
     log.info(f"Agent starting on host: {HOSTNAME}")
-    log.info(f"Shipping to: {BACKEND_URL} every {AGENT_INTERVAL_SECONDS}s")
+    log.info(f"Kafka broker: localhost:9092 | Topic: metrics")
 
     while True:
         try:
@@ -52,6 +63,7 @@ def main():
         except Exception as e:
             log.error(f"Collection error: {e}")
         time.sleep(AGENT_INTERVAL_SECONDS)
+
 
 if __name__ == "__main__":
     main()
