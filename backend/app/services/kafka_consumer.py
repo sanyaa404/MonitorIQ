@@ -12,6 +12,7 @@ from app.schemas.metrics import MetricPayload
 from app.services.metrics_service import write_metrics
 from app.services.alert_service import check_alerts
 from app.services.ws_manager import manager
+from app.services.anomaly_detector import run_anomaly_detection
 
 log = logging.getLogger(__name__)
 settings = get_settings()
@@ -20,7 +21,6 @@ KAFKA_BROKER = "localhost:9092"
 KAFKA_TOPIC = "metrics"
 CONSUMER_GROUP = "monitoring-backend"
 
-# Event loop reference for running async broadcast from sync thread
 _loop = None
 
 
@@ -29,8 +29,8 @@ def set_event_loop(loop):
     _loop = loop
 
 
-def broadcast_to_clients(payload: MetricPayload):
-    """Broadcast metric snapshot to all connected WebSocket clients"""
+def broadcast_to_clients(payload: MetricPayload, anomaly_result: dict):
+    """Broadcast metric snapshot + anomaly result to WebSocket clients"""
     if _loop is None or not manager.active_connections:
         return
 
@@ -79,9 +79,10 @@ def broadcast_to_clients(payload: MetricPayload):
                 for p in payload.processes.top_processes
             ],
         },
+        # Anomaly detection result included in every broadcast
+        "anomaly": anomaly_result,
     }
 
-    # Schedule async broadcast on the FastAPI event loop from this sync thread
     asyncio.run_coroutine_threadsafe(manager.broadcast(data), _loop)
 
 
@@ -90,20 +91,36 @@ def process_message(raw_value: bytes):
         data = json.loads(raw_value.decode("utf-8"))
         payload = MetricPayload(**data)
 
-        # Write to InfluxDB
+        # 1. Write to InfluxDB
         write_metrics(payload)
 
-        # Check alert rules
+        # 2. Check threshold alert rules
         db = SessionLocal()
         try:
             check_alerts(payload, db)
         finally:
             db.close()
 
-        # Push to all connected WebSocket clients
-        broadcast_to_clients(payload)
+        # 3. Run ML anomaly detection
+        anomaly_result = run_anomaly_detection(payload)
 
-        log.info(f"Processed | host={payload.hostname} | CPU={payload.cpu.cpu_percent_total}%")
+        # 4. Push everything to WebSocket clients
+        broadcast_to_clients(payload, anomaly_result)
+
+        # Log anomalies prominently
+        if anomaly_result.get("is_anomaly"):
+            log.warning(
+                f"🚨 ANOMALY | host={payload.hostname} | "
+                f"score={anomaly_result.get('score')} | "
+                f"CPU={payload.cpu.cpu_percent_total}%"
+            )
+        else:
+            log.info(
+                f"Processed | host={payload.hostname} | "
+                f"CPU={payload.cpu.cpu_percent_total}% | "
+                f"ML={anomaly_result.get('status')} | "
+                f"score={anomaly_result.get('score')}"
+            )
 
     except Exception as e:
         log.error(f"Failed to process message: {e}")
