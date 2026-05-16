@@ -3,14 +3,14 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
-import { useMetrics } from '../../hooks/useMetrics'
 
-export default function NetworkChart({ hostname }) {
-  const { data, loading } = useMetrics('network', hostname, 30)
-
-  if (loading && data.length === 0) return (
-    <div className="h-64 flex items-center justify-center text-gray-500 text-sm">
-      Loading network data...
+export default function NetworkChart({ data = [] }) {
+  if (data.length === 0) return (
+    <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+      <h3 className="text-sm font-semibold text-gray-300 mb-4">Network Traffic (MB)</h3>
+      <div className="h-52 flex items-center justify-center text-gray-500 text-sm">
+        Waiting for data...
+      </div>
     </div>
   )
 
@@ -27,8 +27,8 @@ export default function NetworkChart({ hostname }) {
             labelStyle={{ color: '#9ca3af' }}
           />
           <Legend wrapperStyle={{ fontSize: 12, color: '#9ca3af' }}/>
-          <Line type="monotone" dataKey="bytes_sent_mb" stroke="#10b981" strokeWidth={2} dot={false} name="Sent MB"/>
-          <Line type="monotone" dataKey="bytes_recv_mb" stroke="#f59e0b" strokeWidth={2} dot={false} name="Recv MB"/>
+          <Line type="monotone" dataKey="bytes_sent_mb" stroke="#10b981" strokeWidth={2} dot={false} name="Sent MB" isAnimated={false}/>
+          <Line type="monotone" dataKey="bytes_recv_mb" stroke="#f59e0b" strokeWidth={2} dot={false} name="Recv MB" isAnimated={false}/>
         </LineChart>
       </ResponsiveContainer>
     </div>

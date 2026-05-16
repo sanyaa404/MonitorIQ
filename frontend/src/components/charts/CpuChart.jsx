@@ -1,16 +1,16 @@
 // src/components/charts/CpuChart.jsx
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
+  Tooltip, ResponsiveContainer
 } from 'recharts'
-import { useMetrics } from '../../hooks/useMetrics'
 
-export default function CpuChart({ hostname }) {
-  const { data, loading } = useMetrics('cpu', hostname, 30)
-
-  if (loading && data.length === 0) return (
-    <div className="h-64 flex items-center justify-center text-gray-500 text-sm">
-      Loading CPU data...
+export default function CpuChart({ data = [] }) {
+  if (data.length === 0) return (
+    <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+      <h3 className="text-sm font-semibold text-gray-300 mb-4">CPU Usage %</h3>
+      <div className="h-52 flex items-center justify-center text-gray-500 text-sm">
+        Waiting for data...
+      </div>
     </div>
   )
 
@@ -41,6 +41,7 @@ export default function CpuChart({ hostname }) {
             strokeWidth={2}
             dot={false}
             name="CPU %"
+            isAnimated={false}
           />
         </AreaChart>
       </ResponsiveContainer>

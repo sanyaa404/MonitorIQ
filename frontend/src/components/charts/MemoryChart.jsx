@@ -3,14 +3,14 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
 } from 'recharts'
-import { useMetrics } from '../../hooks/useMetrics'
 
-export default function MemoryChart({ hostname }) {
-  const { data, loading } = useMetrics('memory', hostname, 30)
-
-  if (loading && data.length === 0) return (
-    <div className="h-64 flex items-center justify-center text-gray-500 text-sm">
-      Loading memory data...
+export default function MemoryChart({ data = [] }) {
+  if (data.length === 0) return (
+    <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+      <h3 className="text-sm font-semibold text-gray-300 mb-4">Memory Usage %</h3>
+      <div className="h-52 flex items-center justify-center text-gray-500 text-sm">
+        Waiting for data...
+      </div>
     </div>
   )
 
@@ -41,6 +41,7 @@ export default function MemoryChart({ hostname }) {
             strokeWidth={2}
             dot={false}
             name="RAM %"
+            isAnimated={false}
           />
         </AreaChart>
       </ResponsiveContainer>
