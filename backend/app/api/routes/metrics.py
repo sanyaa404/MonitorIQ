@@ -35,3 +35,29 @@ def get_anomaly_status():
             "buffer_size": len(detector.buffer),
         }
     return status
+
+@router.get("/hosts")
+def get_hosts():
+    from app.services.metrics_service import query_metrics
+    from app.core.config import get_settings
+    from app.core.influx import get_query_api
+    settings = get_settings()
+    query_api = get_query_api()
+    query = f'''
+        from(bucket: "{settings.INFLUXDB_BUCKET}")
+        |> range(start: -1h)
+        |> filter(fn: (r) => r._measurement == "cpu")
+        |> keep(columns: ["host"])
+        |> distinct(column: "host")
+    '''
+    try:
+        tables = query_api.query(query, org=settings.INFLUXDB_ORG)
+        hosts = []
+        for table in tables:
+            for record in table.records:
+                host = record.values.get("host")
+                if host and host not in hosts:
+                    hosts.append(host)
+        return {"hosts": hosts}
+    except Exception as e:
+        return {"hosts": []}

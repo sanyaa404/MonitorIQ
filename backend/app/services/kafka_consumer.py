@@ -17,8 +17,9 @@ from app.services.anomaly_detector import run_anomaly_detection
 log = logging.getLogger(__name__)
 settings = get_settings()
 
-KAFKA_BROKER = "localhost:9092"
-KAFKA_TOPIC = "metrics"
+import os
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "metrics")
 CONSUMER_GROUP = "monitoring-backend"
 
 _loop = None

@@ -1,25 +1,43 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
 import Dashboard from './pages/Dashboard'
 import Alerts from './pages/Alerts'
 import { useWebSocket } from './hooks/useWebSocket'
 
-const HOSTNAME = 'MacBook-Air-3.local'
-
 export default function App() {
-  const { connected } = useWebSocket(HOSTNAME)
+  const [hostname, setHostname] = useState('')
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/metrics/hosts')
+      .then(r => r.json())
+      .then(data => {
+        if (data.hosts?.length > 0) setHostname(data.hosts[0])
+      })
+      .catch(() => {})
+    const interval = setInterval(() => {
+      fetch('http://localhost:8000/api/v1/metrics/hosts')
+        .then(r => r.json())
+        .then(data => {
+          if (data.hosts?.length > 0) setHostname(data.hosts[0])
+        })
+        .catch(() => {})
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const { connected } = useWebSocket(hostname)
 
   return (
     <BrowserRouter>
       <div className="flex h-screen bg-gray-950 text-white overflow-hidden">
         <Sidebar/>
         <div className="flex flex-col flex-1 overflow-hidden">
-          <Header hostname={HOSTNAME} connected={connected}/>
+          <Header hostname={hostname || 'Connecting...'} connected={connected}/>
           <main className="flex-1 overflow-hidden">
             <Routes>
-              <Route path="/" element={<Dashboard/>}/>
+              <Route path="/" element={<Dashboard hostname={hostname}/>}/>
               <Route path="/alerts" element={<Alerts/>}/>
             </Routes>
           </main>

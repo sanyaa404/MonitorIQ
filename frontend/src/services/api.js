@@ -1,8 +1,11 @@
 // src/services/api.js
 import axios from 'axios'
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: `${BACKEND_URL}/api/v1`,
   timeout: 10000,
 })
 
@@ -25,4 +28,5 @@ export const authApi = {
   login: (data) => api.post('/auth/login', data).then(r => r.data),
 }
 
+export { WS_URL }
 export default api

@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { Cpu, MemoryStick, Network, Activity } from 'lucide-react'
 import StatCard from '../components/widgets/StatCard'
 import CpuChart from '../components/charts/CpuChart'
@@ -9,10 +8,8 @@ import AlertsPanel from '../components/widgets/AlertsPanel'
 import AnomalyPanel from '../components/widgets/AnomalyPanel'
 import { useWebSocket } from '../hooks/useWebSocket'
 
-const HOSTNAME = 'MacBook-Air-3.local'
-
-export default function Dashboard() {
-  const { latest, history } = useWebSocket(HOSTNAME)
+export default function Dashboard({ hostname }) {
+  const { latest, history } = useWebSocket(hostname)
 
   const cpu = latest?.cpu
   const mem = latest?.memory
@@ -29,7 +26,6 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="CPU Usage" value={cpu?.percent_total?.toFixed(1)} unit="%" icon={Cpu} color="blue" subtitle={`Load: ${cpu?.load_avg_1m?.toFixed(2)}`}/>
         <StatCard title="RAM Usage" value={mem?.ram_percent?.toFixed(1)} unit="%" icon={MemoryStick} color="purple" subtitle={`${mem?.ram_used_gb?.toFixed(1)} GB used`}/>
@@ -37,7 +33,6 @@ export default function Dashboard() {
         <StatCard title="Net Recv" value={net?.bytes_recv_mb?.toFixed(0)} unit="MB" icon={Activity} color="yellow"/>
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <CpuChart data={history.cpu}/>
         <MemoryChart data={history.memory}/>
@@ -45,7 +40,6 @@ export default function Dashboard() {
 
       <NetworkChart data={history.network}/>
 
-      {/* Bottom panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <AnomalyPanel anomaly={anomaly}/>
         <AlertsPanel/>

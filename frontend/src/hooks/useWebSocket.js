@@ -1,7 +1,8 @@
 // src/hooks/useWebSocket.js
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { WS_URL as BASE_WS_URL } from '../services/api'
 
-const WS_URL = 'ws://localhost:8000/ws/metrics'
+const WS_URL = `${BASE_WS_URL}/ws/metrics`
 const MAX_HISTORY = 60 // keep last 60 data points per metric
 
 export function useWebSocket(hostname) {
