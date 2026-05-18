@@ -22,15 +22,15 @@ docker compose up --build
 
 ---
 
-## 📸 Screenshots
+## Dashboard
 
 > Dashboard showing live CPU, memory, network metrics with ML anomaly detection panel
 
-*(Add your screenshot here)*
+<img width="1278" height="713" alt="Screenshot 2026-05-19 at 4 50 44 AM" src="https://github.com/user-attachments/assets/af95ea9a-db62-4160-a986-23b126510afb" />
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐     Kafka Produce      ┌──────────────────────┐
@@ -74,7 +74,7 @@ docker compose up --build
 
 ---
 
-## ✨ Features
+## Features
 
 ### Real-time Metrics Collection
 - CPU usage (total + per-core), load averages, frequency
@@ -121,7 +121,7 @@ docker compose up --build
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -139,7 +139,7 @@ docker compose up --build
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker Desktop installed and running
@@ -182,7 +182,7 @@ The ML model begins warming up immediately. After ~17 minutes (200 data points) 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 monitoring-system/
@@ -251,7 +251,7 @@ monitoring-system/
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 ### Metrics
 | Method | Endpoint | Description |
@@ -284,7 +284,7 @@ Full interactive docs: `http://localhost:8000/docs`
 
 ---
 
-## 🧠 ML Anomaly Detection
+## ML Anomaly Detection
 
 The system uses a two-layer anomaly detection approach:
 
@@ -306,7 +306,7 @@ Warmup (200 pts) → Train → Score → Retrain every 100 pts → ...
 
 ---
 
-## 🔧 Development
+## Development
 
 ### Run without Docker
 
@@ -341,7 +341,7 @@ npm run dev
 
 ---
 
-## 📊 Key Design Decisions
+## Key Design Decisions
 
 **Why Kafka over direct HTTP?**
 Decouples producers from consumers. Agents can publish even if the backend is down. Messages persist and are processed when the backend recovers. Enables multiple consumers (backend + future ML service) reading the same stream independently.
