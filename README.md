@@ -33,7 +33,7 @@ docker compose up --build
 ## Architecture
 
 ```
-┌─────────────────┐     Kafka Produce      ┌──────────────────────┐
+┌─────────────────┐     Kafka Produce       ┌──────────────────────┐
 │  Python Agent   │ ──────────────────────► │   Apache Kafka       │
 │  (psutil)       │                         │   metrics topic      │
 │  Every 5s       │                         │   3 partitions       │
@@ -57,7 +57,7 @@ docker compose up --build
                                     ┌────────────┘           └────────────┐
                                     ▼                                      ▼
                            ┌─────────────────┐                  ┌─────────────────┐
-                           │    InfluxDB      │                  │   PostgreSQL    │
+                           │    InfluxDB     │                  │   PostgreSQL    │
                            │  Time-series    │                  │  Users, Rules   │
                            │  metrics store  │                  │  Alert events   │
                            └─────────────────┘                  └─────────────────┘
